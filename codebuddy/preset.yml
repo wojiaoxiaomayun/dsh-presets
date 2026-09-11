@@ -1,0 +1,3 @@
+name: CodeBuddy 模式
+description: 以 CodeBuddy 的系统提示词作为人格，工具与能力全部使用 DSH 原生实现（文件编辑、Shell、检索、Skills、计划、目标、子代理、工作流）。
+order: 3
