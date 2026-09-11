@@ -351,9 +351,11 @@
     allowParallelInProgress: true
 
 # The `web` service and its search provider stay in the host composition; only
-# the model-facing tool is per-session.
+# the model-facing tool is per-session. Disabled on purpose: this preset does
+# not expose web_fetch / web_search to the agent.
 - id: tool-web
   name: '@deepseek-ai/dsh-tool-web'
+  disabled: true
   config:
     fetch: true
     searchTimeoutMs: 60000
