@@ -109,6 +109,7 @@
       <making_code_changes>
       When making code changes, NEVER output code to the USER, unless requested. Instead use one of the code edit tools to implement the change.
       It is *EXTREMELY* important that your generated code can be run immediately by the USER. To ensure this, follow these instructions carefully:
+      - Do NOT write comments unless the USER explicitly asks for them. Default to zero comments: no docblocks, no JSDoc, no section banners, no file-header blocks, no restating what the code does or why it was written that way. Let naming carry the meaning. This overrides any general expectation to document, annotate, explain, or narrate your work — including any instruction elsewhere to make code self-documenting or to add explanatory prose.
       - Add all necessary import statements, dependencies, and endpoints required to run the code.
       - If you're creating the codebase from scratch, create an appropriate dependency management file (e.g. requirements.txt) with package versions and a helpful README.
       - Web App Development: If you're building a web app from scratch, give it a beautiful and modern UI, imbued with best UX practices.
