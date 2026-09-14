@@ -53,8 +53,18 @@ Copy-Item -Recurse -Force .\codebuddy $dest
 ├── README.md                     # 本文件
 └── codebuddy/
     ├── preset.yml                # 展示元数据（name / description / order）
-    └── agent.cordis.yml          # 智能体组装：人格、工具、Skills、realm 取舍
+    ├── agent.cordis.yml          # 智能体组装：人格、工具、Skills、realm 取舍
+    └── shadow-surface-sections.mjs  # 遮蔽两个宿主全局提示词段落（见下）
 ```
+
+`shadow-surface-sections.mjs` 是预设自带的微型插件，唯一作用是**对本预设的 agent 屏蔽两个全局提示词段落**：
+
+- `harness:source` —— 由 `dsh-app-boot` 注册，说明 DSH 自身安装目录在哪
+- `app:web-surface` —— 由 `dsh-web-app` 注册，Web GUI 的方位说明（含当前 `dsh web` 地址）
+
+这两段**不是可禁用的行**，而是在 `dsh-web-app` 的 `apply()` 内部无条件注册的，且注册时没有作用域，因此是进程级全局、每个预设都会带上。屏蔽原理：提示词注册表按作用域链合并段落，同名时**最近的作用域覆盖全局**，而渲染时**空文本段落被丢弃**——所以从预设作用域注册同名空段落即可移除，且只影响本预设。这与 `dsh-persona` 遮蔽 `deployment:persona-prefix` 是同一机制。
+
+该文件必须**零依赖**（预设装在 `$DSH_HOME/.agent-presets/` 下，向上找不到 `@deepseek-ai/*`），故未 import 任何东西，段落顺序也内联为字面量。删掉 `agent.cordis.yml` 里那一行即可恢复两段。
 
 ## 相关
 

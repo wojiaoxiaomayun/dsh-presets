@@ -136,6 +136,25 @@
   config:
     maxBytes: 65536
 
+# Drop two deployment-global prompt sections for THIS preset's agents only.
+#
+# `harness:source` (`dsh-app-boot`) and `app:web-surface` (`dsh-web-app`) are
+# registered unscoped from inside `dsh-web-app`'s `apply()`, so they exist as no
+# row an overlay could disable and every preset inherits them. Registering a
+# same-named, empty-text section from this preset's scope shadows them: the
+# prompt registry merges the global layer first and then overwrites by name,
+# nearest scope winning, and drops empty sections at render.
+#
+# The `./` specifier is deliberate — a preset-relative row resolves against this
+# preset's own directory, so the file travels with the preset. It must stay
+# dependency-free: the installed preset lives under `$DSH_HOME/.agent-presets/`,
+# where the upward `node_modules` walk never reaches `@deepseek-ai/*`.
+#
+# This is the one row here that is NOT from the shipped `standard` preset.
+# Delete the row to restore both sections; nothing else depends on it.
+- id: shadow-surface-sections
+  name: './shadow-surface-sections.mjs'
+
 # ── shell ───────────────────────────────────────────────────────────────────
 
 # `shell-env` stays in the HOST composition: `apps/cli/src/web.ts` injects it to
