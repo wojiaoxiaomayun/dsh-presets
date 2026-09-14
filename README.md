@@ -8,7 +8,7 @@ DeepSeek Harness (DSH) 的自用 Agent 预设（agent presets）集合。
 
 | 目录 | 预设名 | 说明 |
 | --- | --- | --- |
-| [`codebuddy/`](codebuddy/) | CodeBuddy 模式 | 以 CodeBuddy 的系统提示词作为人格，工具与能力全部使用 DSH 原生实现（文件编辑、Shell、检索、Skills、计划、目标、子代理、工作流）。完整复制官方 `standard` 预设，仅替换 `persona` 一行；`tool-web`（web_fetch / web_search）已按需禁用。 |
+| [`codebuddy/`](codebuddy/) | CodeBuddy 模式 | 以 CodeBuddy 的系统提示词作为人格、面向「平时改改代码」裁剪过的单智能体编码预设。保留文件读写、检索、Shell、后台任务、Skills、任务清单、交互与交付；**已禁用**：`tool-web`（web_fetch / web_search）、目标模式（`command-goal` / `tool-goal`）、计划模式（`planning` 组）、以及整个 delegation 组（`subagent` / `subagent_fork` / `send_message` / `interrupt_agent` / `list_agents` / `workflow` / `ralph`）。基于官方 `standard` 预设复制，但已非「仅改 persona」；每个禁用行都带原因注释，删掉该行的 `disabled` 即可恢复。 |
 
 ## 安装
 

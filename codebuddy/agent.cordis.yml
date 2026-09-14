@@ -1,11 +1,11 @@
 # The `codebuddy` agent preset: CodeBuddy's own system prompt as the persona,
 # over the shipped `standard` composition's tools and capabilities.
 #
-# Copied whole from the shipped `standard` preset, then edited in exactly one
-# place: the `persona` row below. Every other row — shell, filesystem, search,
-# jobs, skills, goals, plan mode, compaction, delegation, workflows, todo,
-# web, present — is byte-identical to `standard`, so this agent has the same
-# tools, with the same schemas, under a different identity.
+# Copied whole from the shipped `standard` preset. This copy is NOT a
+# tools-identical twin: beyond `persona`, goal mode, plan mode, web access, and
+# the whole delegation/workflow group are disabled below, so the agent runs as a
+# plain single-agent coding assistant. Each disabled row carries the reason, and
+# removing its `disabled` restores it.
 #
 # This file is an AGENT-PLANE composition. The roster mounts it ONCE under a
 # standing scope; every session naming it joins by scope parentage, so the
@@ -273,9 +273,21 @@
 # `workflows` is different — nothing outside an agent reads it — so every row
 # that reaches it shares one entry-local realm here, and a consumer left
 # outside would resolve a host registry this preset does not populate.
+#
+# Disabled on purpose: this preset is a single-agent coding assistant, so the
+# seven delegation/orchestration tools this group would contribute stay out of
+# the catalog altogether — `subagent`, `subagent_fork`, `send_message`,
+# `interrupt_agent`, `list_agents`, `workflow`, `ralph`. Disabling the GROUP
+# rather than each row also drops `workflow-worker-thread` and the
+# `workflowEngine` realm with it, which is correct: with `tool-workflow` gone,
+# nothing left in this file reads either. The host plane still owns the
+# `subagents` registry and its spawn/fork backends, so removing `disabled` here
+# restores all seven tools with no other change — including the two optional
+# providers, which stay disabled on their own rows.
 - id: delegation
   name: cordis:group
   group: true
+  disabled: true
   isolate:
     workflowEngine: true
   config:
