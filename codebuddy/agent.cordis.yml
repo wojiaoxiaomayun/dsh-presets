@@ -156,6 +156,32 @@
 - id: shadow-surface-sections
   name: './shadow-surface-sections.mjs'
 
+# ── difficulty gate ─────────────────────────────────────────────────────────
+
+# Scores each task 0-10 and skips verification entirely below the threshold, so
+# trivial edits are delivered without the model running the test suite.
+#
+# `threshold` is this row's config and the DEFAULT every new session starts from.
+# `/difficulty <0-10>` changes it for THAT session only, and nothing is written to
+# disk — so a per-session tweak cannot leak into other sessions or outlive them.
+# Cordis passes a plugin's raw config through untouched when it exports no
+# `Config` schema, which is what lets a zero-dependency preset file take
+# configuration at all.
+#
+# No realm: the file provides no service. It only consumes `systemPrompt`,
+# `tools`, and `commands`, all of which resolve the host registries the preset
+# contributes into — wrapping a consumer row in a realm is the error the
+# `delegation` group above documents from the other direction.
+#
+# The policy text is a fixed prompt SECTION (constant content, so the prompt
+# prefix stays cacheable); the threshold and the reported score ride a dynamic
+# CONTEXT, which is appended as a user message and so never invalidates that
+# prefix. Delete this row to remove the gate, the tool, and the command.
+- id: difficulty-policy
+  name: './difficulty-policy.mjs'
+  config:
+    threshold: 4
+
 # ── shell ───────────────────────────────────────────────────────────────────
 
 # `shell-env` stays in the HOST composition: `apps/cli/src/web.ts` injects it to

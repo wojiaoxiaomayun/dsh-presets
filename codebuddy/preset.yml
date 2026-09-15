@@ -1,3 +1,3 @@
 name: CodeBuddy 模式
-description: 以 CodeBuddy 的系统提示词作为人格，工具与能力全部使用 DSH 原生实现（文件编辑、Shell、检索、Skills、计划、目标、子代理、工作流）。
+description: 以 CodeBuddy 的系统提示词作为人格，工具与能力全部使用 DSH 原生实现（文件编辑、Shell、检索、Skills、任务清单、交互与交付）。带难度门禁：任务先评估 0-10 分，低于阈值（每会话默认 4，可用 /difficulty 按会话调整）时实现完直接交付、不跑测试。
 order: 3
