@@ -3,6 +3,12 @@
   "version": "2.0.0",
   "private": true,
   "type": "module",
+  "exports": {
+    "./shadow-surface-sections.mjs": "./shadow-surface-sections.mjs",
+    "./difficulty-policy.mjs": "./difficulty-policy.mjs",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"

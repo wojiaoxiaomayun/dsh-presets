@@ -152,14 +152,22 @@
           # first and then overwrites by name, nearest scope winning, and drops
           # empty sections at render.
           #
-          # The `./` specifier resolves beside THIS patch file, so the file
-          # travels with the bundle. Both local .mjs files stay dependency-free
-          # on purpose: a bundle patch is loaded from the profile, where the
-          # upward node_modules walk does not reach @deepseek-ai/*.
+          # SPECIFIER FORM MATTERS. A preset row's `./x.mjs` does NOT resolve
+          # beside this patch file: the registry re-parents the preset tree with
+          # `baseUrl` taken from the DECLARING plugin's context, which is the
+          # profile directory (`<profile>/cordis.yml`), so `./x.mjs` would look
+          # for `<profile>/x.mjs` and the row would mount with "never started".
+          # Bare package names resolve through the profile's node_modules --
+          # which is exactly where this bundle is symlinked -- so the plugins are
+          # addressed by our own package name via the `exports` map.
+          #
+          # Both .mjs files stay dependency-free on purpose: they are loaded from
+          # the profile, where the upward node_modules walk does not reach
+          # @deepseek-ai/*.
           #
           # Delete this row to restore both sections; nothing else depends on it.
           - id: shadow-surface-sections
-            name: './shadow-surface-sections.mjs'
+            name: '@local/dsh-codebuddy-preset/shadow-surface-sections.mjs'
 
           # ── difficulty gate ───────────────────────────────────────────────
           # Scores each task 0-10 and skips verification entirely below the
@@ -182,7 +190,7 @@
           # invalidating that prefix. Delete this row to remove the gate, the
           # tool, and the command.
           - id: difficulty-policy
-            name: './difficulty-policy.mjs'
+            name: '@local/dsh-codebuddy-preset/difficulty-policy.mjs'
             config:
               threshold: 4
 

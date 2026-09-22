@@ -133,9 +133,24 @@ plugin_manager(action: "list_plugins")     # 应出现 preset-codebuddy 行
 
 ## 两个自带插件
 
-两个 `.mjs` 都是预设自带的微型插件，都**不发布任何服务**，因此无需 `isolate` realm。行里的 `./xxx.mjs` 是相对路径，**相对 patch 文件所在目录**解析，所以这两个文件会跟着 bundle 一起走。
+两个 `.mjs` 都是预设自带的微型插件，都**不发布任何服务**，因此无需 `isolate` realm。
 
-两个文件都刻意保持**零依赖**（连 `node:*` 都不用）：bundle 从 profile 里加载，向上找 `node_modules` 到不了 `@deepseek-ai/*`。
+> **关键坑（务必记住）**：预设行里的 `./xxx.mjs` **不是**相对 patch 文件解析的。
+> `dsh-agent-preset-registry` 在装载预设时会用**声明方**的 `baseUrl` 重新挂载预设子树，而那个 `baseUrl` 是 **profile 目录**（`<profile>/cordis.yml`）。
+> 所以 `./shadow-surface-sections.mjs` 会被解析成 `<profile>/shadow-surface-sections.mjs`——文件不存在，该行就以
+> `shadow-surface-sections (./shadow-surface-sections.mjs): never started` 失败。
+>
+> 正确写法是**用包名**（`package.json` 的 `exports` 暴露这两个文件），因为包名会走 profile 的 `node_modules`，
+> 而本 bundle 正是软链接在那里：
+>
+> ```yaml
+> - id: shadow-surface-sections
+>   name: '@local/dsh-codebuddy-preset/shadow-surface-sections.mjs'
+> - id: difficulty-policy
+>   name: '@local/dsh-codebuddy-preset/difficulty-policy.mjs'
+> ```
+
+两个文件都刻意保持**零依赖**（连 `node:*` 都不用）：它们从 profile 里加载，向上找 `node_modules` 到不了 `@deepseek-ai/*`。
 
 `shadow-surface-sections.mjs` 的作用是**对本预设的 agent 屏蔽两个全局提示词段落**：
 
