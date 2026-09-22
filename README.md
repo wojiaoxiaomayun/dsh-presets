@@ -161,10 +161,12 @@ plugin_manager(action: "list_plugins")     # 应出现 preset-codebuddy 行
 3. 增加 `difficulty-policy`（本预设专属）；
 4. 禁用 `tool-web`、`command-goal`、`tool-goal`、`planning`、`delegation`。
 
-重写时同时修正了旧文件里两处**已随版本改名、旧文件没跟上**的包名（它们都在被禁用的 `delegation` 组内，所以不影响本预设行为，但一旦有人重新启用该组就会炸）：
+重写时同时修正了旧文件里一处**已随版本改名、旧文件没跟上**的包名（它在被禁用的 `delegation` 组内，所以不影响本预设行为，但一旦有人重新启用该组就会炸）：
 
 - `workflow-ptc`（旧名 `@deepseek-ai/dsh-workflow-worker-thread`，该包已不存在）
-- `present`（旧文件写的是 `@deepseek-ai/dsh-tool-present`；现在该行的 id 就是 `present`，行上不再带包名）
+
+> 注意：每个插件行**都必须有 `name`**——包括 `id: present` 这种「行 id 看起来就像包名」的行，它的 `name` 仍是 `@deepseek-ai/dsh-tool-present`。
+> 少写 `name` 会在声明加载时报 `row N names no plugin (a "name" string is required)`。
 
 ## 相关
 

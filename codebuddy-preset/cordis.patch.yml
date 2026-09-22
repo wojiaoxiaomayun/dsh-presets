@@ -16,14 +16,16 @@
 #     disabled: single-agent coding assistant, no web, no goal/plan mode, no
 #     delegation or workflow tools.
 #
-# Rebuilt faithfully against 0.1.7-alpha.1, which means two shipped-package
-# renames the old file had not picked up:
-#   - `workflow-ptc`  (was `@deepseek-ai/dsh-workflow-worker-thread`, now gone)
-#   - `present`       (was `@deepseek-ai/dsh-tool-present`; the row now carries
-#                      no package because the tool row itself is `present`)
-# Both live inside `delegation`, which is disabled here, so neither changes this
-# preset's behavior -- but leaving the stale names in would have broken the file
-# the moment anyone re-enabled that group.
+# Rebuilt faithfully against 0.1.7-alpha.1, which means one shipped-package
+# rename the old file had not picked up: `workflow-ptc` was
+# `@deepseek-ai/dsh-workflow-worker-thread`, a package that no longer exists.
+# It lives inside `delegation`, which is disabled here, so it does not change
+# this preset's behavior -- but leaving the stale name in would have broken the
+# file the moment anyone re-enabled that group.
+#
+# `present` keeps its shipped package name `@deepseek-ai/dsh-tool-present`
+# even though its row id is just `present`. Every row REQUIRES a `name`; a row
+# with an id and no name fails the declaration with "row N names no plugin".
 #
 # `dsh-plugin-manager/tools` is disabled at the end exactly as `standard` ships
 # it, so the model-facing plugin manager stays off under this preset too.
@@ -358,8 +360,8 @@
               fetch: true
               searchTimeoutMs: 60000
 
-          # The row id IS `present`; the tool row carries no package name.
           - id: present
+            name: '@deepseek-ai/dsh-tool-present'
 
           # Model-facing plugin manager stays off, exactly as `standard` ships.
           - id: tool-plugin-manager
