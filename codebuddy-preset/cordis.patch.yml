@@ -167,7 +167,7 @@
           #
           # Delete this row to restore both sections; nothing else depends on it.
           - id: shadow-surface-sections
-            name: '@local/dsh-codebuddy-preset/shadow-surface-sections.mjs'
+            name: '@dsh-xhl/dsh-codebuddy-preset/shadow-surface-sections.mjs'
 
           # ── difficulty gate ───────────────────────────────────────────────
           # Scores each task 0-10 and skips verification entirely below the
@@ -190,7 +190,7 @@
           # invalidating that prefix. Delete this row to remove the gate, the
           # tool, and the command.
           - id: difficulty-policy
-            name: '@local/dsh-codebuddy-preset/difficulty-policy.mjs'
+            name: '@dsh-xhl/dsh-codebuddy-preset/difficulty-policy.mjs'
             config:
               threshold: 4
 

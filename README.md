@@ -1,122 +1,129 @@
-# dsh-presets
+﻿# dsh-presets
 
-DeepSeek Harness (DSH) 的自用 Agent 预设（agent presets）集合。
-
-> **v2 迁移说明（重要）**：DSH 已经不再读取 `.agent-presets/<id>/` 这种「一个目录 + `preset.yml` + `agent.cordis.yml`」的旧格式预设。
-> 现在一个预设是**一条 `@deepseek-ai/dsh-agent-preset` 声明行**，由**一个 bundle 的 patch 文件**携带，通过 `plugin_manager` 安装。
-> 旧目录格式现在不会被任何代码读取，所以升级后旧预设会**静默消失**。本仓库已迁移到新格式。
-
-## 包含的预设
-
-| 目录 | 预设名 | 说明 |
+DeepSeek Harness (DSH) 鐨勮嚜鐢?Agent 棰勮锛坅gent presets锛夐泦鍚堛€?
+> **v2 杩佺Щ璇存槑锛堥噸瑕侊級**锛欴SH 宸茬粡涓嶅啀璇诲彇 `.agent-presets/<id>/` 杩欑銆屼竴涓洰褰?+ `preset.yml` + `agent.cordis.yml`銆嶇殑鏃ф牸寮忛璁俱€?> 鐜板湪涓€涓璁炬槸**涓€鏉?`@deepseek-ai/dsh-agent-preset` 澹版槑琛?*锛岀敱**涓€涓?bundle 鐨?patch 鏂囦欢**鎼哄甫锛岄€氳繃 `plugin_manager` 瀹夎銆?> 鏃х洰褰曟牸寮忕幇鍦ㄤ笉浼氳浠讳綍浠ｇ爜璇诲彇锛屾墍浠ュ崌绾у悗鏃ч璁句細**闈欓粯娑堝け**銆傛湰浠撳簱宸茶縼绉诲埌鏂版牸寮忋€?
+## 鍖呭惈鐨勯璁?
+| 鐩綍 | 棰勮鍚?| 璇存槑 |
 | --- | --- | --- |
-| [`codebuddy-preset/`](codebuddy-preset/) | CodeBuddy 模式 | 以 CodeBuddy 的系统提示词作为人格、面向「平时改改代码」裁剪过的单智能体编码预设。保留文件读写、检索、Shell、后台任务、Skills、任务清单、交互与交付；**已禁用**：`tool-web`（web_fetch / web_search）、目标模式（`command-goal` / `tool-goal`）、计划模式（`planning` 组）、以及整个 delegation 组（`subagent` / `subagent_fork` / `send_message` / `interrupt_agent` / `list_agents` / `workflow` / `ralph`）。基于官方 `standard` 预设改写。另含一道**难度门禁**（见下）。 |
+| [`codebuddy-preset/`](codebuddy-preset/) | CodeBuddy 妯″紡 | 浠?CodeBuddy 鐨勭郴缁熸彁绀鸿瘝浣滀负浜烘牸銆侀潰鍚戙€屽钩鏃舵敼鏀逛唬鐮併€嶈鍓繃鐨勫崟鏅鸿兘浣撶紪鐮侀璁俱€備繚鐣欐枃浠惰鍐欍€佹绱€丼hell銆佸悗鍙颁换鍔°€丼kills銆佷换鍔℃竻鍗曘€佷氦浜掍笌浜や粯锛?*宸茬鐢?*锛歚tool-web`锛坵eb_fetch / web_search锛夈€佺洰鏍囨ā寮忥紙`command-goal` / `tool-goal`锛夈€佽鍒掓ā寮忥紙`planning` 缁勶級銆佷互鍙婃暣涓?delegation 缁勶紙`subagent` / `subagent_fork` / `send_message` / `interrupt_agent` / `list_agents` / `workflow` / `ralph`锛夈€傚熀浜庡畼鏂?`standard` 棰勮鏀瑰啓銆傚彟鍚竴閬?*闅惧害闂ㄧ**锛堣涓嬶級銆?|
 
-## 结构
+## 缁撴瀯
 
 ```
 .
-├── README.md
-└── codebuddy-preset/                 # ← 一个 bundle，就是一个预设
-    ├── package.json                  # 声明 dsh.bundle.patch 指向下面的 patch
-    ├── cordis.patch.yml              # 预设声明：id / name / description / order / plugins
-    ├── shadow-surface-sections.mjs   # 遮蔽两个宿主全局提示词段落（见下）
-    └── difficulty-policy.mjs         # 难度门禁：评分、动态阈值、/difficulty 命令（见下）
+鈹溾攢鈹€ README.md
+鈹斺攢鈹€ codebuddy-preset/                 # 鈫?涓€涓?bundle锛屽氨鏄竴涓璁?    鈹溾攢鈹€ package.json                  # 澹版槑 dsh.bundle.patch 鎸囧悜涓嬮潰鐨?patch
+    鈹溾攢鈹€ cordis.patch.yml              # 棰勮澹版槑锛歩d / name / description / order / plugins
+    鈹溾攢鈹€ shadow-surface-sections.mjs   # 閬斀涓や釜瀹夸富鍏ㄥ眬鎻愮ず璇嶆钀斤紙瑙佷笅锛?    鈹斺攢鈹€ difficulty-policy.mjs         # 闅惧害闂ㄧ锛氳瘎鍒嗐€佸姩鎬侀槇鍊笺€?difficulty 鍛戒护锛堣涓嬶級
 ```
 
-一个 bundle 只需要 `package.json` 里的一段声明，告诉 DSH 用哪个文件作为 patch：
-
+涓€涓?bundle 鍙渶瑕?`package.json` 閲岀殑涓€娈靛０鏄庯紝鍛婅瘔 DSH 鐢ㄥ摢涓枃浠朵綔涓?patch锛?
 ```json
 {
-  "name": "@local/dsh-codebuddy-preset",
+  "name": "@dsh-xhl/dsh-codebuddy-preset",
   "version": "2.0.0",
-  "private": true,
+  "private": false,
   "type": "module",
-  "dsh": { "bundle": { "patch": "./cordis.patch.yml" } }
+  "exports": {
+    "./shadow-surface-sections.mjs": "./shadow-surface-sections.mjs",
+    "./difficulty-policy.mjs": "./difficulty-policy.mjs",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "dsh": { "bundle": { "patch": "./cordis.patch.yml" } },
+  "files": [
+    "cordis.patch.yml",
+    "shadow-surface-sections.mjs",
+    "difficulty-policy.mjs",
+    "README.md"
+  ]
 }
 ```
 
-而 `cordis.patch.yml` 就是一条 `insert`：
-
+瑕佺偣锛?
+- **`dsh.bundle.patch`** 鏄?DSH 璇嗗埆 bundle 鐨勫敮涓€渚濇嵁锛屽繀椤绘寚鍚?patch 鏂囦欢銆?- **`files`** 鍐冲畾 npm 鍙戝寘鏃跺甫涓婁粈涔堛€傛紡鍐欎細鎶婃彃浠舵枃浠舵紡鎺夛紝瑁呭畬灏辨姤 `never started`銆傜敤 `npm pack --dry-run` 鏍稿銆?- **`exports`** 鏆撮湶涓や釜 `.mjs` 瀛愯矾寰勨€斺€旈璁捐鍙兘鐢ㄥ寘鍚嶅鍧€锛屼笉鑳界敤 `./x.mjs`锛堝師鍥犺涓嬶級銆?- **`private: false`** + `publishConfig.access: "public"`锛坰cope 鍖呴粯璁ょ鏈夛紝涓嶅啓鍙戜笉鍑哄幓锛夈€?
+鑰?`cordis.patch.yml` 灏辨槸涓€鏉?`insert`锛?
 ```yaml
 - insert:
-    - id: preset-codebuddy            # Loader 行 id，约定为 preset-<preset id>
+    - id: preset-codebuddy            # Loader 琛?id锛岀害瀹氫负 preset-<preset id>
       name: '@deepseek-ai/dsh-agent-preset'
       config:
-        id: codebuddy                 # 预设身份，会话按它记住所用预设
-        name: CodeBuddy 模式           # 选择器里的显示名
-        order: 3                      # 名单排序
-        plugins: [...]                # 子插件行列表（工具、人格、段落……）
+        id: codebuddy                 # 棰勮韬唤锛屼細璇濇寜瀹冭浣忔墍鐢ㄩ璁?        name: CodeBuddy 妯″紡           # 閫夋嫨鍣ㄩ噷鐨勬樉绀哄悕
+        order: 3                      # 鍚嶅崟鎺掑簭
+        plugins: [...]                # 瀛愭彃浠惰鍒楄〃锛堝伐鍏枫€佷汉鏍笺€佹钀解€︹€︼級
 ```
 
-## 安装
+## 瀹夎
 
-**不要**再用复制目录到 `$DSH_HOME/.agent-presets/` 的方式——那样装出来的预设不会被读取。
+### 浠?npm 瀹夎锛堟帹鑽愶紝鍙戝竷鍚庯級
 
-安装本仓库的预设，用 DSH 自带的 `plugin_manager`，`target` 指向 bundle 目录的**绝对路径**：
+```bash
+dsh plugin --profile web add @dsh-xhl/dsh-codebuddy-preset
+```
 
+涔熷彲浠ョ敤 `plugin_manager` 宸ュ叿瀹夎锛歚action: install_bundle`锛宍target` 濉?`@dsh-xhl/dsh-codebuddy-preset`銆?
+### 浠庢湰鍦扮洰褰曞畨瑁咃紙寮€鍙戠敤锛?
+`target` 鎸囧悜 bundle 鐩綍鐨?*缁濆璺緞**锛?
 ```powershell
-# 在 DSH 会话里让 agent 执行，或通过 Web 的插件管理界面安装：
 plugin_manager(action: "install_bundle", target: "F:\AgentWork\dsh-presets\codebuddy-preset")
 ```
 
-它自己会完成依赖安装与 bundle 启用，**不需要**手工跑 `pnpm`。
-
-安装后**刷新页面**，在新建会话的选择器中即可看到该预设（显示名来自 `config.name`，如「CodeBuddy 模式」），也可以把它设为默认预设。
-
-## 验证
+瀹冭嚜宸变細瀹屾垚渚濊禆瀹夎涓?bundle 鍚敤锛?*涓嶉渶瑕?*鎵嬪伐璺?`pnpm`銆?
+> **涓嶈**鍐嶇敤澶嶅埗鐩綍鍒?`$DSH_HOME/.agent-presets/` 鐨勬柟寮忊€斺€旈偅鏍疯鍑烘潵鐨勯璁句笉浼氳浠讳綍浠ｇ爜璇诲彇銆?
+瀹夎鍚?*鍒锋柊椤甸潰**锛屽湪鏂板缓浼氳瘽鐨勯€夋嫨鍣ㄤ腑鍗冲彲鐪嬪埌璇ラ璁撅紙鏄剧ず鍚嶆潵鑷?`config.name`锛屽銆孋odeBuddy 妯″紡銆嶏級锛屼篃鍙互鎶婂畠璁句负榛樿棰勮銆?
+## 楠岃瘉
 
 ```powershell
-plugin_manager(action: "list_bundles")     # 应出现 @local/dsh-codebuddy-preset
-plugin_manager(action: "list_plugins")     # 应出现 preset-codebuddy 行
+plugin_manager(action: "list_bundles")     # 搴斿嚭鐜?@dsh-xhl/dsh-codebuddy-preset
+plugin_manager(action: "list_plugins")     # 搴斿嚭鐜?preset-codebuddy 琛?```
+
+`preset-codebuddy` 琛屼細闅忓叾鎵€鍦?bundle 涓€璧疯嚜鍔ㄥ嚭鐜般€傚垽鏂畠鏄惁**鐪熸鍙敤**锛岀湅瀹冪殑 fiber 闃舵鏄惁涓?`active`锛?
+- 鎸傝浇澶辫触鐨勮浼?*鐣欏湪鍚嶅崟涓?*骞堕檮甯﹀け璐ュ師鍥狅紙涓嶄細闈欓粯娑堝け锛夛紝鐓у師鍥犱慨濂藉悗閲嶆柊瀹夎鍗冲彲銆?- 宸插瓨鍦ㄧ殑浼氳瘽涓庡叾瀛愪唬鐞嗕繚鐣欏畠浠惎鍔ㄦ椂鐨勯偅浠芥彃浠剁増鏈紱鏀瑰姩鍚庤鍦?*鏂颁細璇?*閲岄獙璇併€?
+鍙戝寘鍓嶅缓璁厛鑷涓€娆★紝纭鎵€鏈夎閮借兘琚В鏋愶細
+
+```powershell
+cd codebuddy-preset
+npm pack --dry-run        # 纭 files 鍒楄〃閲?4 涓枃浠堕兘鍦?```
+
+## 鍙戝竷鍒?npm
+
+```bash
+cd codebuddy-preset
+npm version patch          # 鎴?minor / major
+npm publish                # scope 鍖呴渶瑕?publishConfig.access=public锛堝凡閰嶇疆锛?```
+
+鍙戝竷鍚庯紝浠讳綍浜鸿繖鏍疯锛?
+```bash
+dsh plugin --profile web add @dsh-xhl/dsh-codebuddy-preset
 ```
 
-`preset-codebuddy` 行会随其所在 bundle 一起自动出现。判断它是否**真正可用**，看它的 fiber 阶段是否为 `active`：
+鍙戝竷娉ㄦ剰浜嬮」锛?
+- **鐗堟湰鍙峰繀椤婚€掑**锛宯pm 涓嶅厑璁歌鐩栧凡鍙戝竷鐗堟湰銆?- `files` 婕忓啓浼氬皯鍙戞枃浠讹紝瑁呬笂灏辨姤 `never started`鈥斺€斿彂甯冨墠鐢?`npm pack --dry-run` 鏍稿銆?- 鍙戝竷鍚?`node_modules` 閲屾槸**鐪熷疄鍓湰**锛堜笉鏄紑鍙戞椂鐨勮蒋閾炬帴锛夛紝鎵€浠ラ璁捐缁濅笉鑳界敤 `./` 鐩稿璺緞锛屽繀椤荤敤鍖呭悕銆?- 鍖呭悕涓€鏃﹀彂甯冨氨**涓嶈兘鏀?*锛堟敼鍖呭悕绛変簬鍙戞柊鍖咃紝鑰佺敤鎴蜂笉浼氭敹鍒版洿鏂帮級銆?
+## 浣跨敤
 
-- 挂载失败的行会**留在名单上**并附带失败原因（不会静默消失），照原因修好后重新安装即可。
-- 已存在的会话与其子代理保留它们启动时的那份插件版本；改动后请在**新会话**里验证。
+- 浼氳瘽鍒涘缓鏃堕€夊畾 preset锛涘彧鏈夌┖浼氳瘽鍙互鍒囨崲 preset銆?- 鍔犲叆鍚屼竴 preset 鐨勪細璇濆叡浜竴浠藉凡瑁呰浇鐨勭粍瑁咃紝瀛愪唬鐞嗭紙subagent锛夌户鎵跨埗鏂圭殑缁勮锛堝湪鏈璁鹃噷 delegation 缁勬槸鍏虫帀鐨勶紝鎵€浠ヤ笉浼氭湁瀛愪唬鐞嗭級銆?- 缁勮鐨勫姞杞介敊璇笉浼氳闅愯棌锛氭棤娉曞姞杞界殑 preset 浼氬湪閫夋嫨鍣ㄤ腑杩炲悓鍘熷洜涓€骞跺垪鍑猴紝鏂逛究瀹氫綅淇鎴栧垹闄ゃ€?
+## 鑷畾涔?
+- 鐩存帴缂栬緫 `codebuddy-preset/cordis.patch.yml` 鍗冲彲璋冩暣璇ラ璁剧殑宸ュ叿涓庢彁绀鸿瘝锛屾瘡涓閮芥湁娉ㄩ噴璇存槑鍏朵綔鐢ㄤ笌鎵€鍦?realm 鐨勫彇鑸嶇悊鐢便€傛敼瀹?*閲嶆柊瀹夎涓€娆¤ bundle**锛坄install_bundle` 鍙噸澶嶆墽琛岋級骞跺埛鏂伴〉闈€?- 鑻ヨ鎭㈠ `web_fetch` / `web_search`锛屾妸 `tool-web` 閭ｄ竴琛岀殑 `disabled: true` 鍘绘帀锛堟垨鏁磋鍒犻櫎锛夈€侶ost 鐨?`web` 鏈嶅姟涓庢悳绱㈡彁渚涙柟鍦ㄥ涓诲钩闈紝棰勮鍙渶寮€鏀炬ā鍨嬩晶宸ュ叿銆?- 鑻ヨ鎭㈠ delegation 缁勶紙`subagent` / `subagent_fork` / `workflow` / `ralph` 绛夛級锛屽幓鎺?`delegation` 缁勯偅涓€琛岀殑 `disabled: true` 鍗冲彲锛涚粍鍐呬袱涓彲閫?provider 琛岋紙codex / claude-code锛変粛鍚勮嚜淇濇寔绂佺敤銆?- **鏂板棰勮**锛氬鍒?`codebuddy-preset/` 鐩綍锛屾敼 `package.json` 閲岀殑 `name`锛屾敼 patch 閲岀殑 `id` / `config.id` / `config.name`锛坄config.id` 蹇呴』鍞竴锛岄噸澶嶄細瀵艰嚧澹版槑鍔犺浇澶辫触锛夈€?
+> 鑷缂栧啓鐨勯璁捐瑙嗕负**鍙椾俊浠婚厤缃?*锛氬畠浼氭巿浜堟墍閫夋彃浠剁殑鍏ㄩ儴鑳藉姏锛屼笖瀹夎 bundle 浼氬湪 Host 杩涚▼閲屾墽琛屾彃浠朵唬鐮併€傝鍙湪鍙俊鏈哄櫒涓婁娇鐢ㄣ€?
+## 闅惧害闂ㄧ
 
-## 使用
-
-- 会话创建时选定 preset；只有空会话可以切换 preset。
-- 加入同一 preset 的会话共享一份已装载的组装，子代理（subagent）继承父方的组装（在本预设里 delegation 组是关掉的，所以不会有子代理）。
-- 组装的加载错误不会被隐藏：无法加载的 preset 会在选择器中连同原因一并列出，方便定位修复或删除。
-
-## 自定义
-
-- 直接编辑 `codebuddy-preset/cordis.patch.yml` 即可调整该预设的工具与提示词，每个行都有注释说明其作用与所在 realm 的取舍理由。改完**重新安装一次该 bundle**（`install_bundle` 可重复执行）并刷新页面。
-- 若要恢复 `web_fetch` / `web_search`，把 `tool-web` 那一行的 `disabled: true` 去掉（或整行删除）。Host 的 `web` 服务与搜索提供方在宿主平面，预设只需开放模型侧工具。
-- 若要恢复 delegation 组（`subagent` / `subagent_fork` / `workflow` / `ralph` 等），去掉 `delegation` 组那一行的 `disabled: true` 即可；组内两个可选 provider 行（codex / claude-code）仍各自保持禁用。
-- **新增预设**：复制 `codebuddy-preset/` 目录，改 `package.json` 里的 `name`，改 patch 里的 `id` / `config.id` / `config.name`（`config.id` 必须唯一，重复会导致声明加载失败）。
-
-> 自行编写的预设被视为**受信任配置**：它会授予所选插件的全部能力，且安装 bundle 会在 Host 进程里执行插件代码。请只在可信机器上使用。
-
-## 难度门禁
-
-`codebuddy` 带一道**难度门禁**：模型在动手改文件前先把任务难度评为 **0–10 分**（通过 `report_task_difficulty` 工具，附一句可核对理由），并与阈值比较。
-
-- **分数 ≥ 阈值**：照常工作，该跑测试、该构建就照做。
-- **分数 < 阈值**：实现完**直接交付**——不跑测试套件、不写测试文件、不做额外验证、也不反问要不要验证，并在最终回复中说明「因低于阈值跳过了验证」以及分数与阈值。
-
-这样平时的小改动不用再等一轮测试。评分锚点（提示词里给模型的标准，也是理由该对照的标尺）：
-
-| 分数 | 适用场景 |
+`codebuddy` 甯︿竴閬?*闅惧害闂ㄧ**锛氭ā鍨嬪湪鍔ㄦ墜鏀规枃浠跺墠鍏堟妸浠诲姟闅惧害璇勪负 **0鈥?0 鍒?*锛堥€氳繃 `report_task_difficulty` 宸ュ叿锛岄檮涓€鍙ュ彲鏍稿鐞嗙敱锛夛紝骞朵笌闃堝€兼瘮杈冦€?
+- **鍒嗘暟 鈮?闃堝€?*锛氱収甯稿伐浣滐紝璇ヨ窇娴嬭瘯銆佽鏋勫缓灏辩収鍋氥€?- **鍒嗘暟 < 闃堝€?*锛氬疄鐜板畬**鐩存帴浜や粯**鈥斺€斾笉璺戞祴璇曞浠躲€佷笉鍐欐祴璇曟枃浠躲€佷笉鍋氶澶栭獙璇併€佷篃涓嶅弽闂涓嶈楠岃瘉锛屽苟鍦ㄦ渶缁堝洖澶嶄腑璇存槑銆屽洜浣庝簬闃堝€艰烦杩囦簡楠岃瘉銆嶄互鍙婂垎鏁颁笌闃堝€笺€?
+杩欐牱骞虫椂鐨勫皬鏀瑰姩涓嶇敤鍐嶇瓑涓€杞祴璇曘€傝瘎鍒嗛敋鐐癸紙鎻愮ず璇嶉噷缁欐ā鍨嬬殑鏍囧噯锛屼篃鏄悊鐢辫瀵圭収鐨勬爣灏猴級锛?
+| 鍒嗘暟 | 閫傜敤鍦烘櫙 |
 | --- | --- |
-| 0–2 | 改一行、错别字、单个显而易见的值 |
-| 3–4 | 单文件内的小范围改动、有边界的 bug 修复、配置微调 |
-| 5–6 | 跨若干文件的改动，或边界清晰的小功能 |
-| 7–8 | 跨模块改动、涉及多处调用点的重构、新子系统 |
-| 9–10 | 迁移、并发、协议或数据格式变更、安全敏感、或难以撤销的工作 |
+| 0鈥? | 鏀逛竴琛屻€侀敊鍒瓧銆佸崟涓樉鑰屾槗瑙佺殑鍊?|
+| 3鈥? | 鍗曟枃浠跺唴鐨勫皬鑼冨洿鏀瑰姩銆佹湁杈圭晫鐨?bug 淇銆侀厤缃井璋?|
+| 5鈥? | 璺ㄨ嫢骞叉枃浠剁殑鏀瑰姩锛屾垨杈圭晫娓呮櫚鐨勫皬鍔熻兘 |
+| 7鈥? | 璺ㄦā鍧楁敼鍔ㄣ€佹秹鍙婂澶勮皟鐢ㄧ偣鐨勯噸鏋勩€佹柊瀛愮郴缁?|
+| 9鈥?0 | 杩佺Щ銆佸苟鍙戙€佸崗璁垨鏁版嵁鏍煎紡鍙樻洿銆佸畨鍏ㄦ晱鎰熴€佹垨闅句互鎾ら攢鐨勫伐浣?|
 
-阈值默认 **4**，**每个会话各自一份**，可以随时在会话内改：
-
+闃堝€奸粯璁?**4**锛?*姣忎釜浼氳瘽鍚勮嚜涓€浠?*锛屽彲浠ラ殢鏃跺湪浼氳瘽鍐呮敼锛?
 ```
-/difficulty          # 查看本会话的阈值与本次任务的评分
-/difficulty 7        # 把本会话的阈值改为 7
-/difficulty reset    # 把本会话恢复为默认值
-```
+/difficulty          # 鏌ョ湅鏈細璇濈殑闃堝€间笌鏈浠诲姟鐨勮瘎鍒?/difficulty 7        # 鎶婃湰浼氳瘽鐨勯槇鍊兼敼涓?7
+/difficulty reset    # 鎶婃湰浼氳瘽鎭㈠涓洪粯璁ゅ€?```
 
-`/difficulty` 只接受 **0–10 的整数**（不四舍五入，`7.5` 直接报错）或 `reset`；省略参数即查看当前状态。改动**只影响当前会话**，不写磁盘、不会串到其它会话、会话结束后即消失；新会话一律从 patch 里那一行的 `config.threshold` 开始：
+`/difficulty` 鍙帴鍙?**0鈥?0 鐨勬暣鏁?*锛堜笉鍥涜垗浜斿叆锛宍7.5` 鐩存帴鎶ラ敊锛夋垨 `reset`锛涚渷鐣ュ弬鏁板嵆鏌ョ湅褰撳墠鐘舵€併€傛敼鍔?*鍙奖鍝嶅綋鍓嶄細璇?*锛屼笉鍐欑鐩樸€佷笉浼氫覆鍒板叾瀹冧細璇濄€佷細璇濈粨鏉熷悗鍗虫秷澶憋紱鏂颁細璇濅竴寰嬩粠 patch 閲岄偅涓€琛岀殑 `config.threshold` 寮€濮嬶細
 
 ```yaml
 - id: difficulty-policy
@@ -125,64 +132,39 @@ plugin_manager(action: "list_plugins")     # 应出现 preset-codebuddy 行
     threshold: 4
 ```
 
-`config.threshold` 缺失或不是 0–10 的数值时，回退到内置默认值 **4**。没有命令界面的部署（headless / ACP）里不注册 `/difficulty`，但门禁的提示词与 `report_task_difficulty` 工具照常生效。
+`config.threshold` 缂哄け鎴栦笉鏄?0鈥?0 鐨勬暟鍊兼椂锛屽洖閫€鍒板唴缃粯璁ゅ€?**4**銆傛病鏈夊懡浠ょ晫闈㈢殑閮ㄧ讲锛坔eadless / ACP锛夐噷涓嶆敞鍐?`/difficulty`锛屼絾闂ㄧ鐨勬彁绀鸿瘝涓?`report_task_difficulty` 宸ュ叿鐓у父鐢熸晥銆?
+> 娉ㄦ剰锛氬垎鏁扮敱妯″瀷鑷瘎銆傞棬绂佷細瑕佹眰瀹冪粰鍑虹悊鐢憋紝涓旀彁绀鸿瘝鏄庣‘銆屽瓨鐤戞椂寰€涓婃墦鍒嗐€嶏紝浣嗘ā鍨嬩粛鍙兘浣庝及闅惧害鈥斺€斾綆鍒嗘剰鍛崇潃杩欐浜や粯**鏈粡浠讳綍楠岃瘉**锛岄闄╃敱浣犳壙鎷呫€傛兂鍏虫帀鏁撮亾闂ㄧ锛屽垹鎺?`difficulty-policy` 閭ｄ竴琛屽嵆鍙€?>
+> 棰勮鏄€屾瘡涓細璇濆姞鍏ュ悓涓€浠界粍瑁呫€嶏紝鎵€浠ラ槇鍊间笌璇勫垎閮芥寜浼氳瘽锛坅gent锛夊垎鍒瓨鍌紝骞跺湪浼氳瘽缁撴潫鏃跺洖鏀讹紱杩欎篃鏄畠**涓嶈惤鐩?*鐨勫師鍥犫€斺€旀病鏈変竴浠藉叏灞€閰嶇疆鍙互琚埆鐨勪細璇濇垨涓嬫鍚姩璇诲埌銆?
+## 涓や釜鑷甫鎻掍欢
 
-> 注意：分数由模型自评。门禁会要求它给出理由，且提示词明确「存疑时往上打分」，但模型仍可能低估难度——低分意味着这次交付**未经任何验证**，风险由你承担。想关掉整道门禁，删掉 `difficulty-policy` 那一行即可。
->
-> 预设是「每个会话加入同一份组装」，所以阈值与评分都按会话（agent）分别存储，并在会话结束时回收；这也是它**不落盘**的原因——没有一份全局配置可以被别的会话或下次启动读到。
-
-## 两个自带插件
-
-两个 `.mjs` 都是预设自带的微型插件，都**不发布任何服务**，因此无需 `isolate` realm。
-
-> **关键坑（务必记住）**：预设行里的 `./xxx.mjs` **不是**相对 patch 文件解析的。
-> `dsh-agent-preset-registry` 在装载预设时会用**声明方**的 `baseUrl` 重新挂载预设子树，而那个 `baseUrl` 是 **profile 目录**（`<profile>/cordis.yml`）。
-> 所以 `./shadow-surface-sections.mjs` 会被解析成 `<profile>/shadow-surface-sections.mjs`——文件不存在，该行就以
-> `shadow-surface-sections (./shadow-surface-sections.mjs): never started` 失败。
->
-> 正确写法是**用包名**（`package.json` 的 `exports` 暴露这两个文件），因为包名会走 profile 的 `node_modules`，
-> 而本 bundle 正是软链接在那里：
->
+涓や釜 `.mjs` 閮芥槸棰勮鑷甫鐨勫井鍨嬫彃浠讹紝閮?*涓嶅彂甯冧换浣曟湇鍔?*锛屽洜姝ゆ棤闇€ `isolate` realm銆?
+> **鍏抽敭鍧戯紙鍔″繀璁颁綇锛?*锛氶璁捐閲岀殑 `./xxx.mjs` **涓嶆槸**鐩稿 patch 鏂囦欢瑙ｆ瀽鐨勩€?> `dsh-agent-preset-registry` 鍦ㄨ杞介璁炬椂浼氱敤**澹版槑鏂?*鐨?`baseUrl` 閲嶆柊鎸傝浇棰勮瀛愭爲锛岃€岄偅涓?`baseUrl` 鏄?**profile 鐩綍**锛坄<profile>/cordis.yml`锛夈€?> 鎵€浠?`./shadow-surface-sections.mjs` 浼氳瑙ｆ瀽鎴?`<profile>/shadow-surface-sections.mjs`鈥斺€旀枃浠朵笉瀛樺湪锛岃琛屽氨浠?> `shadow-surface-sections (./shadow-surface-sections.mjs): never started` 澶辫触銆?>
+> 姝ｇ‘鍐欐硶鏄?*鐢ㄥ寘鍚?*锛坄package.json` 鐨?`exports` 鏆撮湶杩欎袱涓枃浠讹級锛屽洜涓哄寘鍚嶄細璧?profile 鐨?`node_modules`锛?> 鑰屾湰 bundle 姝ｆ槸杞摼鎺ュ湪閭ｉ噷锛?>
 > ```yaml
 > - id: shadow-surface-sections
->   name: '@local/dsh-codebuddy-preset/shadow-surface-sections.mjs'
+>   name: '@dsh-xhl/dsh-codebuddy-preset/shadow-surface-sections.mjs'
 > - id: difficulty-policy
->   name: '@local/dsh-codebuddy-preset/difficulty-policy.mjs'
+>   name: '@dsh-xhl/dsh-codebuddy-preset/difficulty-policy.mjs'
 > ```
 
-两个文件都刻意保持**零依赖**（连 `node:*` 都不用）：它们从 profile 里加载，向上找 `node_modules` 到不了 `@deepseek-ai/*`。
+涓や釜鏂囦欢閮藉埢鎰忎繚鎸?*闆朵緷璧?*锛堣繛 `node:*` 閮戒笉鐢級锛氬畠浠粠 profile 閲屽姞杞斤紝鍚戜笂鎵?`node_modules` 鍒颁笉浜?`@deepseek-ai/*`銆?
+`shadow-surface-sections.mjs` 鐨勪綔鐢ㄦ槸**瀵规湰棰勮鐨?agent 灞忚斀涓や釜鍏ㄥ眬鎻愮ず璇嶆钀?*锛?
+- `harness:source` 鈥斺€?鐢?`dsh-app-boot` 娉ㄥ唽锛岃鏄?DSH 鑷韩瀹夎鐩綍鍦ㄥ摢
+- `app:web-surface` 鈥斺€?鐢?`dsh-web-app` 娉ㄥ唽锛學eb GUI 鐨勬柟浣嶈鏄庯紙鍚綋鍓?`dsh web` 鍦板潃锛?
+杩欎袱娈?*涓嶆槸鍙鐢ㄧ殑琛?*锛岃€屾槸鍦?`dsh-web-app` 鐨?`apply()` 鍐呴儴鏃犳潯浠舵敞鍐岀殑锛屼笖娉ㄥ唽鏃舵病鏈変綔鐢ㄥ煙锛屽洜姝ゆ槸杩涚▼绾у叏灞€銆佹瘡涓璁鹃兘浼氬甫涓娿€傚睆钄藉師鐞嗭細鎻愮ず璇嶆敞鍐岃〃鎸変綔鐢ㄥ煙閾惧悎骞舵钀斤紝鍚屽悕鏃?*鏈€杩戠殑浣滅敤鍩熻鐩栧叏灞€**锛岃€屾覆鏌撴椂**绌烘枃鏈钀借涓㈠純**鈥斺€旀墍浠ヤ粠棰勮浣滅敤鍩熸敞鍐屽悓鍚嶇┖娈佃惤鍗冲彲绉婚櫎锛屼笖鍙奖鍝嶆湰棰勮銆傝繖涓?`dsh-persona` 閬斀 `deployment:persona-prefix` 鏄悓涓€鏈哄埗銆傚垹鎺夐偅涓€琛屽嵆鍙仮澶嶄袱娈点€?
+`difficulty-policy.mjs` 鐨勫疄鐜拌鐐癸細
 
-`shadow-surface-sections.mjs` 的作用是**对本预设的 agent 屏蔽两个全局提示词段落**：
+- **闆?import**锛堣繛 `node:*` 閮戒笉鐢級銆傞槇鍊兼潵鑷琛岀殑 `config.threshold`鈥斺€擟ordis 鍦ㄦ彃浠?*鏈鍑?`Config` schema** 鏃跺師鏍烽€忎紶 config锛岃繖姝ｆ槸闆朵緷璧栨枃浠朵篃鑳芥帴鍙楅厤缃€佷笖涓嶅繀鑷繁璇诲啓鏂囦欢鐨勫師鍥犮€?- 宸ュ叿鐢?*绾璞?*娉ㄥ唽锛坄ctx.tools.register({...})`锛夛紝鍥犱负 `defineTool()` 闇€瑕?import `@deepseek-ai/dsh-tools`銆?- 绛栫暐姝ｆ枃璧?`systemPrompt.section()`锛堝浐瀹氭枃鏈紝淇濅綇 KV 鍓嶇紑锛夛紝闃堝€间笌璇勫垎璧?`systemPrompt.context()`锛堟瘡姝ラ噸鏂版眰鍊笺€佹寜浼氳瘽鍙栧€硷紝涓斾綔涓?user message 杩藉姞锛屼笉浼氬嚮绌垮墠缂€锛夈€?- **鎵€鏈夌姸鎬佹寜浼氳瘽锛坅gent锛夊垎鍒瓨鍌?*锛氶璁惧彧鎸傝浇涓€娆★紝妯″潡绾у彉閲忎細琚墍鏈変細璇濆叡浜紝鎵€浠ユ瘡娆¤鍙栭兘浠ュ綋鍓?agent 涓洪敭銆俙/difficulty` 鍙敼璋冪敤瀹冪殑閭ｄ釜浼氳瘽銆傝褰曞湪 `agent/disposed` 鏃跺洖鏀垛€斺€斿畠涓嶄細姣忎釜浼氳瘽鐣欎竴鏉℃案涓嶉噴鏀剧殑鏉＄洰銆?- `commands` 璧?`ctx.get('commands')` 鍙€夎В鏋愯€岄潪 `inject`锛氭病鏈夊懡浠ょ晫闈㈢殑閮ㄧ讲锛坔eadless / ACP锛夐噷锛岃繖閬撻棬绂佺殑鎻愮ず璇嶄笌宸ュ叿鐓у父鐢熸晥锛屽彧鏄病鏈?`/difficulty`銆?
+## 涓庡畼鏂?`standard` 棰勮鐨勫樊寮?
+鏈璁剧殑鎻掍欢鍒楄〃鏄収 `@deepseek-ai/dsh-web-app` 0.1.7-alpha.1 鐨?`presets/standard.patch.yml` 閲嶅啓鐨勶紝宸紓鍙湁锛?
+1. `persona` 鎹㈡垚 CodeBuddy 鐨勬彁绀鸿瘝锛?2. 澧炲姞 `shadow-surface-sections`锛堟湰棰勮涓撳睘锛夛紱
+3. 澧炲姞 `difficulty-policy`锛堟湰棰勮涓撳睘锛夛紱
+4. 绂佺敤 `tool-web`銆乣command-goal`銆乣tool-goal`銆乣planning`銆乣delegation`銆?
+閲嶅啓鏃跺悓鏃朵慨姝ｄ簡鏃ф枃浠堕噷涓€澶?*宸查殢鐗堟湰鏀瑰悕銆佹棫鏂囦欢娌¤窡涓?*鐨勫寘鍚嶏紙瀹冨湪琚鐢ㄧ殑 `delegation` 缁勫唴锛屾墍浠ヤ笉褰卞搷鏈璁捐涓猴紝浣嗕竴鏃︽湁浜洪噸鏂板惎鐢ㄨ缁勫氨浼氱偢锛夛細
 
-- `harness:source` —— 由 `dsh-app-boot` 注册，说明 DSH 自身安装目录在哪
-- `app:web-surface` —— 由 `dsh-web-app` 注册，Web GUI 的方位说明（含当前 `dsh web` 地址）
+- `workflow-ptc`锛堟棫鍚?`@deepseek-ai/dsh-workflow-worker-thread`锛岃鍖呭凡涓嶅瓨鍦級
 
-这两段**不是可禁用的行**，而是在 `dsh-web-app` 的 `apply()` 内部无条件注册的，且注册时没有作用域，因此是进程级全局、每个预设都会带上。屏蔽原理：提示词注册表按作用域链合并段落，同名时**最近的作用域覆盖全局**，而渲染时**空文本段落被丢弃**——所以从预设作用域注册同名空段落即可移除，且只影响本预设。这与 `dsh-persona` 遮蔽 `deployment:persona-prefix` 是同一机制。删掉那一行即可恢复两段。
+> 娉ㄦ剰锛氭瘡涓彃浠惰**閮藉繀椤绘湁 `name`**鈥斺€斿寘鎷?`id: present` 杩欑銆岃 id 鐪嬭捣鏉ュ氨鍍忓寘鍚嶃€嶇殑琛岋紝瀹冪殑 `name` 浠嶆槸 `@deepseek-ai/dsh-tool-present`銆?> 灏戝啓 `name` 浼氬湪澹版槑鍔犺浇鏃舵姤 `row N names no plugin (a "name" string is required)`銆?
+## 鐩稿叧
 
-`difficulty-policy.mjs` 的实现要点：
-
-- **零 import**（连 `node:*` 都不用）。阈值来自该行的 `config.threshold`——Cordis 在插件**未导出 `Config` schema** 时原样透传 config，这正是零依赖文件也能接受配置、且不必自己读写文件的原因。
-- 工具用**纯对象**注册（`ctx.tools.register({...})`），因为 `defineTool()` 需要 import `@deepseek-ai/dsh-tools`。
-- 策略正文走 `systemPrompt.section()`（固定文本，保住 KV 前缀），阈值与评分走 `systemPrompt.context()`（每步重新求值、按会话取值，且作为 user message 追加，不会击穿前缀）。
-- **所有状态按会话（agent）分别存储**：预设只挂载一次，模块级变量会被所有会话共享，所以每次读取都以当前 agent 为键。`/difficulty` 只改调用它的那个会话。记录在 `agent/disposed` 时回收——它不会每个会话留一条永不释放的条目。
-- `commands` 走 `ctx.get('commands')` 可选解析而非 `inject`：没有命令界面的部署（headless / ACP）里，这道门禁的提示词与工具照常生效，只是没有 `/difficulty`。
-
-## 与官方 `standard` 预设的差异
-
-本预设的插件列表是照 `@deepseek-ai/dsh-web-app` 0.1.7-alpha.1 的 `presets/standard.patch.yml` 重写的，差异只有：
-
-1. `persona` 换成 CodeBuddy 的提示词；
-2. 增加 `shadow-surface-sections`（本预设专属）；
-3. 增加 `difficulty-policy`（本预设专属）；
-4. 禁用 `tool-web`、`command-goal`、`tool-goal`、`planning`、`delegation`。
-
-重写时同时修正了旧文件里一处**已随版本改名、旧文件没跟上**的包名（它在被禁用的 `delegation` 组内，所以不影响本预设行为，但一旦有人重新启用该组就会炸）：
-
-- `workflow-ptc`（旧名 `@deepseek-ai/dsh-workflow-worker-thread`，该包已不存在）
-
-> 注意：每个插件行**都必须有 `name`**——包括 `id: present` 这种「行 id 看起来就像包名」的行，它的 `name` 仍是 `@deepseek-ai/dsh-tool-present`。
-> 少写 `name` 会在声明加载时报 `row N names no plugin (a "name" string is required)`。
-
-## 相关
-
-- [DSH Agent 预设文档（dsh-agent-presets）](https://github.com/deepseek-ai/dsh) —— 预设的声明、发现与按会话组装机制。
+- [DSH Agent 棰勮鏂囨。锛坉sh-agent-presets锛塢(https://github.com/deepseek-ai/dsh) 鈥斺€?棰勮鐨勫０鏄庛€佸彂鐜颁笌鎸変細璇濈粍瑁呮満鍒躲€?
