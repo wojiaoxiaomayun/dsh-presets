@@ -1,0 +1,38 @@
+{
+  "name": "@dsh-xhl/dsh-codebuddy-preset",
+  "version": "2.0.0",
+  "private": false,
+  "description": "CodeBuddy 模式的 DSH agent preset：以 CodeBuddy 的系统提示词作为人格，工具与能力全部使用 DSH 原生实现，带一道按会话可调的 0-10 分难度门禁。",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "exports": {
+    "./shadow-surface-sections.mjs": "./shadow-surface-sections.mjs",
+    "./difficulty-policy.mjs": "./difficulty-policy.mjs",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "files": [
+    "cordis.patch.yml",
+    "shadow-surface-sections.mjs",
+    "difficulty-policy.mjs",
+    "README.md"
+  ],
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "agent-preset",
+    "preset",
+    "codebuddy"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT"
+}

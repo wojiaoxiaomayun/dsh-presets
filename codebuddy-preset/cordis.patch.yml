@@ -1,0 +1,377 @@
+# The `codebuddy` agent preset, declared the way this DSH version reads presets:
+# one `@deepseek-ai/dsh-agent-preset` declaration carried by this bundle patch.
+#
+# Rebuilt from the SHIPPED `standard` preset of @deepseek-ai/dsh-web-app
+# 0.1.7-alpha.1 (`presets/standard.patch.yml`), not from the old
+# `.agent-presets/codebuddy/agent.cordis.yml`. That legacy format is no longer
+# read by anything, which is why the preset stopped appearing.
+#
+# Differences from the shipped `standard`, all deliberate:
+#   - `persona` carries CodeBuddy's own system prompt.
+#   - `shadow-surface-sections` (preset-local) drops two deployment-global
+#     prompt sections for this preset's agents only.
+#   - `difficulty-policy` (preset-local) adds the 0-10 difficulty gate and the
+#     `/difficulty` command.
+#   - `tool-web`, `command-goal`, `tool-goal`, `planning`, `delegation` are
+#     disabled: single-agent coding assistant, no web, no goal/plan mode, no
+#     delegation or workflow tools.
+#
+# Rebuilt faithfully against 0.1.7-alpha.1, which means one shipped-package
+# rename the old file had not picked up: `workflow-ptc` was
+# `@deepseek-ai/dsh-workflow-worker-thread`, a package that no longer exists.
+# It lives inside `delegation`, which is disabled here, so it does not change
+# this preset's behavior -- but leaving the stale name in would have broken the
+# file the moment anyone re-enabled that group.
+#
+# `present` keeps its shipped package name `@deepseek-ai/dsh-tool-present`
+# even though its row id is just `present`. Every row REQUIRES a `name`; a row
+# with an id and no name fails the declaration with "row N names no plugin".
+#
+# `dsh-plugin-manager/tools` is disabled at the end exactly as `standard` ships
+# it, so the model-facing plugin manager stays off under this preset too.
+
+- insert:
+    - id: preset-codebuddy
+      name: '@deepseek-ai/dsh-agent-preset'
+      config:
+        id: codebuddy
+        name: CodeBuddy 模式
+        description: 以 CodeBuddy 的系统提示词作为人格，工具与能力全部使用 DSH 原生实现（文件编辑、Shell、检索、Skills、任务清单、交互与交付）。带难度门禁：任务先评估 0-10 分，低于阈值（每会话默认 4，可用 /difficulty 按会话调整）时实现完直接交付、不跑测试。
+        order: 3
+        plugins:
+          # ── identity ──────────────────────────────────────────────────────
+          # CodeBuddy's own system prompt as the persona prefix, shadowing the
+          # deployment default for this agent only. `{{model}}` and `{{cwd}}`
+          # resolve from the agent's own route and workspace.
+          #
+          # `complete` stays unset on purpose: the prefix shadows the
+          # CodeBuddy-style identity while DSH's first-party tool guidance and
+          # the plan-mode section keep working, so the DSH tool schemas stay
+          # usable. `complete: true` would make this text the ENTIRE system
+          # prompt -- the most byte-faithful CodeBuddy reproduction, at the cost
+          # of that guidance.
+          - id: persona
+            name: '@deepseek-ai/dsh-persona'
+            config:
+              suffix: Your working directory is {{cwd}}.
+              prefix: |
+                You are an AI coding assistant, powered by the {{model}} model.
+
+                You are pair programming with a USER to solve their coding task. Each time the USER sends a message, we may automatically attach some information about their current state, such as what files they have open, where their cursor is, recently viewed files, edit history in their session so far, linter errors, and more. This information may or may not be relevant to the coding task, it is up for you to decide.
+
+                Your main goal is to follow the USER's instructions at each message.
+
+                By default, invoke tools in parallel, not sequentially. When unsure, lean toward more parallel calls to maximize efficiency.
+
+                **IMPORTANT**: ".codebuddy" folder stores project-related data and is NOT a temporary cache. Please do NOT delete this folder!
+
+                <communication>
+                - **IMPORTANT**: You MUST be concise, direct, and to the point.
+                - Try to keep output tokens concise while still ensuring helpfulness, quality, and accuracy.
+                - ALWAYS use backticks to format file, directory, function, and class names. Use \( and \) for inline math, \[ and \] for block math.
+                - Do not add narration comments inside code just to explain actions.
+                - Avoid using emojis in all communication unless asked.
+                - **IMPORTANT**: You should minimize output tokens as much as possible while maintaining helpfulness, quality, and accuracy. Only address the specific query or task at hand, avoiding tangential information unless absolutely critical for completing the request.
+                - **IMPORTANT: State assumptions and continue; don't stop for approval unless you're blocked!!!**
+                </communication>
+
+                <tool_calling>
+                - The conversation may reference tools that are no longer available. NEVER call tools that are not explicitly provided. Even if you see assistant messages with custom tool call formats (such as "<previous_tool_call>" or similar), do not follow that and instead use the standard format.
+                - Parallelize tool calls per <maximize_parallel_tool_calls>: batch read-only context reads and independent edits instead of serial drip calls.
+                - If actions are dependent or might conflict, sequence them; otherwise, run them in the same batch/turn.
+                - Don't mention tool names to the user; describe actions naturally.
+                - If info is discoverable via tools, prefer that over asking the user.
+                - If you make a plan, immediately follow it, do not wait for the user to confirm or tell you to go ahead.
+                - Read multiple files as needed; don't guess.
+                </tool_calling>
+
+                <maximize_context_understanding>
+                You have tools to search the workspace and read files. Follow these rules regarding tool calls:
+                - **IMPORTANT**: MUST Be THOROUGH when gathering information. Make sure you have the FULL picture before replying.
+                - Answers should be based on the context provided by the user or the codebase, rather than your own knowledge.
+                - **Be persistent and thorough**: If initial searches don't provide complete answers, try alternative patterns, narrower or broader scopes, or different tool combinations.
+                - If you need to read a file, prefer to read larger sections at once over multiple smaller calls.
+                - **Fallback gracefully**: If one search approach fails or returns insufficient results, switch to alternative methods.
+                - Bias towards not asking the user for help if you can find the answer yourself.
+                - If you are unsure about the answer to the USER's request, you should gather more information by using additional tool calls, asking clarifying questions, etc...
+
+                </maximize_context_understanding>
+
+                <maximize_parallel_tool_calls>
+                CRITICAL INSTRUCTION: For maximum efficiency, whenever you perform multiple operations, invoke all relevant tools simultaneously rather than sequentially. Prioritize calling tools in parallel whenever possible. For example, when reading 3 files, run 3 tool calls in parallel to read all 3 files into context at the same time. When running multiple read-only commands like `read`, `grep`, `glob`, always run all of the commands in parallel. Err on the side of maximizing parallel tool calls rather than running too many tools sequentially.
+
+                When gathering information about a topic, plan your searches upfront in your thinking and then execute all tool calls together. For instance, all of these cases SHOULD use parallel tool calls:
+                - Searching for different patterns (imports, usage, definitions) should happen in parallel
+                - Multiple `grep` searches with different patterns should run simultaneously
+                - Reading multiple files or searching different directories can be done all at once
+                - Any information gathering where you know upfront what you're looking for
+                And you should use parallel tool calls in many more cases beyond those listed above.
+
+                Before making tool calls, briefly consider: What information do I need to fully answer this question? Then execute all those searches together rather than waiting for each result before planning the next search. Most of the time, parallel tool calls can be used rather than sequential. Sequential calls can ONLY be used when you genuinely REQUIRE the output of one tool to determine the usage of the next tool.
+
+                DEFAULT TO PARALLEL: Unless you have a specific reason why operations MUST be sequential (output of A required for input of B), always execute multiple tools simultaneously. This is not just an optimization - it's the expected behavior. Remember that parallel tool execution can be 3-5x faster than sequential calls, significantly improving the user experience.
+                </maximize_parallel_tool_calls>
+
+                <making_code_changes>
+                When making code changes, NEVER output code to the USER, unless requested. Instead use one of the code edit tools to implement the change.
+                It is *EXTREMELY* important that your generated code can be run immediately by the USER. To ensure this, follow these instructions carefully:
+                - Do NOT write comments unless the USER explicitly asks for them. Default to zero comments: no docblocks, no JSDoc, no section banners, no file-header blocks, no restating what the code does or why it was written that way. Let naming carry the meaning. This overrides any general expectation to document, annotate, explain, or narrate your work — including any instruction elsewhere to make code self-documenting or to add explanatory prose.
+                - Add all necessary import statements, dependencies, and endpoints required to run the code.
+                - If you're creating the codebase from scratch, create an appropriate dependency management file (e.g. requirements.txt) with package versions and a helpful README.
+                - Web App Development: If you're building a web app from scratch, give it a beautiful and modern UI, imbued with best UX practices.
+                - NEVER generate an extremely long hash or any non-textual code, such as binary. These are not helpful to the USER and are very expensive.
+                - IMPORTANT: Absolutely avoid rewriting or refactoring user's large files unless it is absolutely necessary!!! Always focus on understanding the file contents first, and then use `edit` for targeted edits!
+                - If you've introduced (linter) errors, fix them if clear how to (or you can easily figure out how to). Do not make uneducated guesses. And DO NOT loop more than 3 times on fixing linter errors on the same file. On the third time, you should stop and ask the user what to do next.
+                </making_code_changes>
+
+                <inline_line_numbers>
+                Code chunks that you receive (via tool calls or from user) include inline line numbers in the form:
+                LINE_NUMBER:LINE_CONTENT
+
+                IMPORTANT:
+                - Treat the "LINE_NUMBER:" prefix as metadata and do NOT treat it as part of the actual code.
+                - Before using the code for any purpose (e.g. reading, diffing, search/replace, or constructing old_str),
+                  you MUST strip the exact "LINE_NUMBER:" prefix from each line.
+                </inline_line_numbers>
+
+                <response_language>
+                当前处于中文环境，使用简体中文回答 (Speak in Chinese).
+                </response_language>
+
+          - id: agent-instructions
+            name: '@deepseek-ai/dsh-agent-instructions'
+            config:
+              maxBytes: 65536
+
+          # Drop two deployment-global prompt sections for THIS preset's agents
+          # only. `harness:source` (dsh-app-boot) and `app:web-surface`
+          # (dsh-web-app) are registered unscoped from inside apply(), so they
+          # exist as no row an overlay could disable and every preset inherits
+          # them. Registering a same-named, empty-text section from this
+          # preset's scope shadows them: the registry merges the global layer
+          # first and then overwrites by name, nearest scope winning, and drops
+          # empty sections at render.
+          #
+          # SPECIFIER FORM MATTERS. A preset row's `./x.mjs` does NOT resolve
+          # beside this patch file: the registry re-parents the preset tree with
+          # `baseUrl` taken from the DECLARING plugin's context, which is the
+          # profile directory (`<profile>/cordis.yml`), so `./x.mjs` would look
+          # for `<profile>/x.mjs` and the row would mount with "never started".
+          # Bare package names resolve through the profile's node_modules --
+          # which is exactly where this bundle is symlinked -- so the plugins are
+          # addressed by our own package name via the `exports` map.
+          #
+          # Both .mjs files stay dependency-free on purpose: they are loaded from
+          # the profile, where the upward node_modules walk does not reach
+          # @deepseek-ai/*.
+          #
+          # Delete this row to restore both sections; nothing else depends on it.
+          - id: shadow-surface-sections
+            name: '@dsh-xhl/dsh-codebuddy-preset/shadow-surface-sections.mjs'
+
+          # ── difficulty gate ───────────────────────────────────────────────
+          # Scores each task 0-10 and skips verification entirely below the
+          # threshold, so trivial edits are delivered without running the suite.
+          #
+          # `threshold` is this row's config and the DEFAULT every new session
+          # starts from. `/difficulty <0-10>` changes it for THAT session only,
+          # and nothing is written to disk -- so a per-session tweak cannot leak
+          # into other sessions or outlive them. Cordis passes a plugin's raw
+          # config through untouched when it exports no `Config` schema, which
+          # is what lets a zero-dependency file take configuration at all.
+          #
+          # No realm: the file provides no service. It only consumes
+          # `systemPrompt`, `tools`, and `commands`, all of which resolve the
+          # host registries the preset contributes into.
+          #
+          # The policy text is a fixed prompt SECTION (constant content, so the
+          # prompt prefix stays cacheable); the threshold and reported score ride
+          # a dynamic CONTEXT, appended as a user message and so never
+          # invalidating that prefix. Delete this row to remove the gate, the
+          # tool, and the command.
+          - id: difficulty-policy
+            name: '@dsh-xhl/dsh-codebuddy-preset/difficulty-policy.mjs'
+            config:
+              threshold: 4
+
+          # ── shell ─────────────────────────────────────────────────────────
+          - id: tool-bash
+            name: '@deepseek-ai/dsh-tool-bash'
+            disabled: !!js process.platform === 'win32'
+
+          - id: tool-pwsh
+            name: '@deepseek-ai/dsh-tool-pwsh'
+            disabled: !!js process.platform !== 'win32'
+
+          # ── filesystem ────────────────────────────────────────────────────
+          - id: tool-fs
+            name: '@deepseek-ai/dsh-tool-fs'
+
+          - id: tool-fs-search
+            name: '@deepseek-ai/dsh-tool-fs-search'
+            config:
+              sampleOverCapGlobResults: false
+
+          # ── background jobs ───────────────────────────────────────────────
+          - id: tool-jobs
+            name: '@deepseek-ai/dsh-tool-jobs'
+
+          # ── skills ────────────────────────────────────────────────────────
+          - id: skill-filesystem
+            name: '@deepseek-ai/dsh-skill-filesystem'
+
+          - id: tool-skill
+            name: '@deepseek-ai/dsh-tool-skill'
+
+          # ── goals ─────────────────────────────────────────────────────────
+          # Both disabled: this preset does not use goal mode.
+          - id: command-goal
+            name: '@deepseek-ai/dsh-command-goal'
+            disabled: true
+
+          - id: tool-goal
+            name: '@deepseek-ai/dsh-tool-goal'
+            disabled: true
+
+          # ── plan mode ─────────────────────────────────────────────────────
+          # This preset does not use plan mode, so the whole group is disabled
+          # (plan-mode + exit_plan_mode are removed).
+          - id: planning
+            name: cordis:group
+            group: true
+            disabled: true
+            isolate:
+              planMode: true
+            config:
+              - id: plan-mode
+                name: '@deepseek-ai/dsh-plan-mode'
+
+          # ── compaction ────────────────────────────────────────────────────
+          - id: compaction
+            name: cordis:group
+            group: true
+            isolate:
+              compaction: true
+              toolResultPruner: true
+            config:
+              - id: compaction-basic
+                name: '@deepseek-ai/dsh-compaction-basic'
+
+              - id: command-compact
+                name: '@deepseek-ai/dsh-command-compact'
+
+              - id: tool-result-pruner
+                name: '@deepseek-ai/dsh-compaction-tool-result-pruner'
+                config:
+                  thresholdChars: 8192
+                  headChars: 4096
+                  tailChars: 1024
+
+          # ── delegation and workflows ──────────────────────────────────────
+          # Disabled on purpose: this preset is a single-agent coding
+          # assistant, so the delegation/orchestration tools this group would
+          # contribute stay out of the catalog altogether -- `subagent`,
+          # `subagent_fork`, `send_message`, `interrupt_agent`, `list_agents`,
+          # `workflow`, `ralph`. Disabling the GROUP rather than each row also
+          # drops the `workflowEngine` realm with it, which is correct: with
+          # `tool-workflow` gone, nothing left reads it. The host plane still
+          # owns the `subagents` registry and its spawn/fork backends, so
+          # removing `disabled` here restores all seven tools with no other
+          # change -- including the two optional providers, which stay disabled
+          # on their own rows.
+          - id: delegation
+            name: cordis:group
+            group: true
+            disabled: true
+            isolate:
+              workflowEngine: true
+            config:
+              - id: tool-subagent-control
+                name: '@deepseek-ai/dsh-tool-subagent-control'
+
+              - id: tool-subagent-list-agents
+                name: '@deepseek-ai/dsh-tool-subagent-control/list-agents'
+
+              - id: tool-subagent
+                name: '@deepseek-ai/dsh-tool-subagent'
+                config:
+                  provider: spawn
+                  toolName: subagent
+                  modelSelectionSettings: true
+                  backgroundMode: continuable
+
+              # Fork omits model selection so provider/model stay equal to the
+              # parent and the inherited history remains eligible for KV Cache
+              # reuse.
+              - id: tool-subagent-fork
+                name: '@deepseek-ai/dsh-tool-subagent'
+                config:
+                  provider: fork
+                  toolName: subagent_fork
+                  backgroundMode: continuable
+
+              # Production dsh does not install these optional providers.
+              # Install the matching Bundle in this Profile and restart the
+              # Host, then remove `disabled` from the matching row.
+              - id: tool-subagent-codex
+                name: '@deepseek-ai/dsh-tool-subagent'
+                disabled: true
+                config:
+                  provider: codex
+                  toolName: subagent_codex
+                  backgroundMode: one-shot
+                  maxDepth: provider-managed
+
+              - id: tool-subagent-claude-code
+                name: '@deepseek-ai/dsh-tool-subagent'
+                disabled: true
+                config:
+                  provider: claude-code
+                  toolName: subagent_claude_code
+                  backgroundMode: one-shot
+                  maxDepth: provider-managed
+
+              # Renamed from `dsh-workflow-worker-thread`, which no longer
+              # exists in 0.1.7-alpha.1.
+              - id: workflow-ptc
+                name: '@deepseek-ai/dsh-workflow-ptc'
+                config:
+                  provider: spawn
+
+              - id: tool-workflow
+                name: '@deepseek-ai/dsh-tool-workflow'
+
+              # `standard` ships this disabled; mirrored here.
+              - id: tool-ralph
+                name: '@deepseek-ai/dsh-tool-ralph'
+                disabled: true
+                config:
+                  subagentProvider: spawn
+                  maxRounds: 64
+
+          # ── remaining model-facing rows ───────────────────────────────────
+          - id: tool-ask-user
+            name: '@deepseek-ai/dsh-tool-ask-user'
+
+          - id: tool-todo
+            name: '@deepseek-ai/dsh-tool-todo'
+            config:
+              allowParallelInProgress: true
+
+          # Disabled on purpose: this preset does not expose web_fetch /
+          # web_search to the agent. Flip to `false` or delete `disabled` to
+          # restore both.
+          - id: tool-web
+            name: '@deepseek-ai/dsh-tool-web'
+            disabled: true
+            config:
+              fetch: true
+              searchTimeoutMs: 60000
+
+          - id: present
+            name: '@deepseek-ai/dsh-tool-present'
+
+          # Model-facing plugin manager stays off, exactly as `standard` ships.
+          - id: tool-plugin-manager
+            name: '@deepseek-ai/dsh-plugin-manager/tools'
+            disabled: true
