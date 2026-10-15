@@ -41,8 +41,9 @@
         plugins:
           # ── identity ──────────────────────────────────────────────────────
           # CodeBuddy's own system prompt as the persona prefix, shadowing the
-          # deployment default for this agent only. `{{model}}` and `{{cwd}}`
-          # resolve from the agent's own route and workspace.
+          # deployment default for this agent only. Only `{{provider}}` and
+          # `{{model}}` are registered variables here; `{{cwd}}` is NOT
+          # supported and fails the render with "unknown prompt variable".
           #
           # `complete` stays unset on purpose: the prefix shadows the
           # CodeBuddy-style identity while DSH's first-party tool guidance and
@@ -53,7 +54,7 @@
           - id: persona
             name: '@deepseek-ai/dsh-persona'
             config:
-              suffix: Your working directory is {{cwd}}.
+              suffix: ''
               prefix: |
                 You are an AI coding assistant, powered by the {{model}} model.
 
