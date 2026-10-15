@@ -234,7 +234,7 @@ function apply(ctx, config) {
         // command's `description` and `input.hint` verbatim (only the
         // first-party commands carry a built-in locale mapping), so whatever
         // is written here is what the slash menu shows.
-        description: `查看或设置【本会话】的难度阈值（0-${MAX_SCORE}）；低于阈值的任务直接交付、不跑测试`,
+        description: `查看/设置本会话难度阈值（0-${MAX_SCORE}），低于阈值直接交付`,
         input: { hint: `[0-${MAX_SCORE} 或 reset]` },
         // The threshold lives in this plugin's per-session state, not a log event.
         recordInput: false,

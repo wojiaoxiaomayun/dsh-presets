@@ -1,6 +1,6 @@
 {
   "name": "@dsh-xhl/dsh-codebuddy-preset",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "private": false,
   "description": "CodeBuddy 模式的 DSH agent preset：以 CodeBuddy 的系统提示词作为人格，工具与能力全部使用 DSH 原生实现，带一道按会话可调的 0-10 分难度门禁。",
   "type": "module",
